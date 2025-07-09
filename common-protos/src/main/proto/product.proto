@@ -11,7 +11,7 @@ service ProductService {
 }
 
 message GetProductRequest {
-  string productId = 1;
+  string product_id = 1;
 }
 
 message ProductInfo {
@@ -19,5 +19,5 @@ message ProductInfo {
   string name = 2;
   string description = 3;
   double price = 4;
-  int32 quantity = 5;
+  string category = 5;
 } 
