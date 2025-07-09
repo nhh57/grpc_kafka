@@ -1,93 +1,69 @@
-# Kế hoạch Triển khai Module: Product Service
+# Kế hoạch Triển khai Module: Product Service (gRPC + Multi-layer Caching)
 
 ## 1. Tổng quan và Mục tiêu
 
-- **Mô tả:** Service này chịu trách nhiệm quản lý toàn bộ vòng đời và thông tin của sản phẩm. Nó là "nguồn sự thật" (source of truth) cho giá, mô tả và trạng thái sản phẩm. Đồng thời, nó được thiết kế để có hiệu suất đọc cực cao thông qua kiến trúc caching phức tạp.
+- **Mô tả:** Service quản lý toàn bộ vòng đời và thông tin sản phẩm, là nguồn sự thật (source of truth) cho giá, mô tả, trạng thái sản phẩm. Thiết kế để đạt hiệu suất đọc cực cao qua caching 2 lớp.
 - **Mục tiêu chính:**
-    1.  **Cung cấp API ổn định:** Xây dựng các gRPC endpoints để các services khác (như `Order Service`) có thể truy vấn thông tin sản phẩm một cách đáng tin cậy.
-    2.  **Hiệu suất cực cao:** Triển khai kiến trúc caching 2 lớp (L1/L2) để đáp ứng lượng truy cập lớn vào các ngày khuyến mãi mà không làm quá tải cơ sở dữ liệu.
-    3.  **Đảm bảo tính nhất quán:** Dữ liệu sản phẩm trong cache phải luôn được cập nhật nhất quán với dữ liệu gốc thông qua một luồng xử lý sự kiện bất đồng bộ (sử dụng Kafka và Redis Pub/Sub).
+    1.  Cung cấp API gRPC ổn định, strongly-typed, hiệu suất cao.
+    2.  Đảm bảo nhất quán dữ liệu giữa cache và DB, đồng bộ hóa qua Kafka/Redis PubSub.
+    3.  Tối ưu hóa hiệu suất đọc với kiến trúc caching 2 lớp (L1: Guava, L2: Redis).
 
-## 2. Thiết kế Kỹ thuật Chi tiết
+---
 
-### 2.1. API gRPC (`product.proto`)
+# Checklist Task Triển khai Product Service (gRPC + Multi-layer Caching)
 
-Định nghĩa "hợp đồng" API cho service.
+## 1. Chuẩn bị Cơ sở hạ tầng & Phụ thuộc
+- [ ] Task 1.1: Thêm dependency `guava`, `redisson-spring-boot-starter`, `spring-boot-starter-data-redis`, `spring-kafka`, `grpc-spring-boot-starter` vào `pom.xml`.
+- [ ] Task 1.2: Cấu hình Redis (host, port, pool, TTL) trong `application.properties`.
+- [ ] Task 1.3: Cấu hình Kafka (bootstrap servers, topic, group) trong `application.properties`.
+- [ ] Task 1.4: Cấu hình actuator/monitoring cho cache, Redis, Kafka, DB.
 
-```proto
-// protos/product.proto
-syntax = "proto3";
+## 2. Thiết kế & Triển khai Domain
+- [ ] Task 2.1: Tạo entity `Product` với các trường: id, name, description, price, quantity, version.
+- [ ] Task 2.2: Đánh index trên `id`, `version` trong entity và DB.
+- [ ] Task 2.3: Thêm annotation `@Version` cho trường version (optimistic locking).
+- [ ] Task 2.4: Tạo repository `ProductRepository` extends JpaRepository.
 
-package product;
+## 3. Định nghĩa API gRPC
+- [ ] Task 3.1: Định nghĩa file `product.proto` với các message và service như tài liệu.
+- [ ] Task 3.2: Generate Java code từ proto.
+- [ ] Task 3.3: Tạo lớp `ProductGrpcServiceImpl` implement các RPC (GetProductInfo, ValidatePriceWithVersion).
 
-option java_package = "com.example.productservice.grpc";
-option java_multiple_files = true;
+## 4. Triển khai Caching 2 lớp
+### L1: Guava Cache
+- [ ] Task 4.1: Tạo cấu hình Guava Cache (maxSize, expireAfterWrite).
+- [ ] Task 4.2: Tạo service `L1ProductCacheService` (get, put, invalidate, expose stats).
+- [ ] Task 4.3: Expose cache stats qua actuator.
+### L2: Redis Cache
+- [ ] Task 4.4: Tạo cấu hình Redis cache (TTL, key pattern).
+- [ ] Task 4.5: Tạo service `L2ProductCacheService` (get, put, invalidate, expose stats).
+- [ ] Task 4.6: Expose Redis health qua actuator.
+### Cache Logic & Invalidation
+- [ ] Task 4.7: Triển khai logic cache-aside: L1 → L2 → DB.
+- [ ] Task 4.8: Triển khai distributed lock (Redisson) khi cache miss.
+- [ ] Task 4.9: Triển khai cache invalidation: khi update, invalidate L2, publish Redis Pub/Sub để các instance invalidate L1.
+- [ ] Task 4.10: Định nghĩa key pattern `product:{id}` cho cache.
 
-// Service để quản lý sản phẩm
-service ProductService {
-  // Lấy thông tin chi tiết của sản phẩm
-  rpc GetProductInfo(GetProductRequest) returns (ProductInfo);
-  // (Nâng cao) Validate giá và phiên bản để chống race condition
-  rpc ValidatePriceWithVersion(ValidatePriceRequest) returns (ProductInfo);
-}
+## 5. Đồng bộ & Event
+- [ ] Task 5.1: Lắng nghe event Kafka `InventoryUpdated`, update L2 cache.
+- [ ] Task 5.2: Lắng nghe Redis Pub/Sub để invalidate L1 cache trên các instance.
+- [ ] Task 5.3: Publish event khi update tồn kho.
 
-message GetProductRequest {
-  string productId = 1;
-}
+## 6. Xử lý concurrency
+- [ ] Task 6.1: Áp dụng optimistic locking khi update product (kiểm tra version).
+- [ ] Task 6.2: Triển khai distributed lock (Redisson) khi cache miss.
+- [ ] Task 6.3: Thêm retry logic (exponential backoff) khi acquire lock thất bại.
+- [ ] Task 6.4: Đảm bảo lock TTL, release lock trong finally để tránh deadlock.
 
-message ValidatePriceRequest {
-  string productId = 1;
-  double expectedPrice = 2;
-  int64 version = 3;
-}
+## 7. Monitoring & Health Check
+- [ ] Task 7.1: Expose actuator endpoint cho cache stats, Redis/Kafka/DB health, lock metrics.
+- [ ] Task 7.2: Thiết lập alert khi cache hit rate thấp, lock contention cao.
 
-message ProductInfo {
-  string id = 1;
-  string name = 2;
-  string description = 3;
-  double price = 4;
-  int64 version = 5; // Dùng cho optimistic locking
-}
-```
+## 8. Kiểm thử
+- [ ] Task 8.1: Viết unit test cho service, cache logic, lock, event handler (mock Redis/Kafka).
+- [ ] Task 8.2: Viết integration test cho full flow gRPC → cache → DB, test cache hit/miss, invalidation, concurrent access.
+- [ ] Task 8.3: Viết performance test đo throughput, latency, cache hit rate, lock contention.
 
-### 2.2. Kiến trúc Caching 2 Lớp
-
--   **L1 Cache (Local Cache - Guava):** Cache trong bộ nhớ của mỗi instance `Product Service`.
-    -   **Ưu điểm:** Tốc độ truy cập nhanh nhất (nano giây), không có độ trễ mạng.
-    -   **Nhược điểm:** Dữ liệu không được chia sẻ giữa các instance.
--   **L2 Cache (Distributed Cache - Redis):** Cache phân tán, dùng chung cho tất cả các instance.
-    -   **Ưu điểm:** Dữ liệu nhất quán cho toàn bộ service.
-    -   **Nhược điểm:** Có độ trễ mạng (mili giây).
--   **Chống Cache Stampede:** Khi một key hết hạn, nhiều request có thể cùng lúc "miss" cache và tấn công vào CSDL.
-    -   **Giải pháp:** Sử dụng cơ chế `LoadingCache` của Guava hoặc `Lock` để chỉ một luồng duy nhất được phép đi tiếp và load dữ liệu từ CSDL. Các luồng khác sẽ chờ luồng này hoàn thành và đọc dữ liệu mới từ cache.
-
-### 2.3. Luồng Đồng bộ và Vô hiệu hóa Cache (Kafka & Redis Pub/Sub)
-
-Đây là cơ chế đảm bảo cache luôn tươi mới.
-1.  **Cập nhật dữ liệu (DB -> L2):**
-    -   `Inventory Service` sau khi cập nhật kho sẽ publish `InventoryUpdatedEvent`.
-    -   Một worker trong `Product Service` sẽ lắng nghe sự kiện này và cập nhật dữ liệu mới vào L2 Cache (Redis).
-2.  **Vô hiệu hóa L1 Cache (L2 -> L1 Invalidation):**
-    -   Ngay sau khi cập nhật L2 Cache, worker sẽ `PUBLISH` một thông điệp nhỏ (chỉ chứa `productId`) vào một Redis Channel.
-    -   Tất cả các instance `Product Service` đều `SUBSCRIBE` channel này.
-    -   Khi nhận thông điệp, mỗi instance sẽ tự động xóa (invalidate) `productId` tương ứng khỏi L1 Cache (Guava) của chính nó.
-
-## 3. Lộ trình Triển khai (Phân rã Nhiệm vụ)
-
-### Giai đoạn 1: Triển khai gRPC Core (Get It Working First)
-*   **Mục tiêu:** Xây dựng chức năng gRPC cơ bản để các service khác có thể hoạt động.
-
--   [ ] **Nhiệm vụ 1.1:** Thiết lập project `common-protos` và định nghĩa `product.proto`.
--   [ ] **Nhiệm vụ 1.2:** Cấu hình `product-service` để có thể build code gRPC từ file `.proto`.
--   [ ] **Nhiệm vụ 1.3:** Triển khai lớp Domain (Entity `Product`) và Repository (`ProductRepository`).
--   [ ] **Nhiệm vụ 1.4:** Triển khai logic cho `ProductGrpcService` để xử lý các cuộc gọi RPC.
--   [ ] **Nhiệm vụ 1.5:** Viết Unit & Integration Test để xác minh gRPC endpoint hoạt động chính xác.
-
-### Giai đoạn 2: Triển khai Caching (Make It Fast)
-*   **Mục tiêu:** Tăng tốc độ phản hồi và giảm tải cho hệ thống.
-
--   [ ] **Nhiệm vụ 2.1:** Tích hợp Redis và triển khai L2 Cache theo mẫu cache-aside.
--   [ ] **Nhiệm vụ 2.2:** Tích hợp Guava và triển khai L1 Cache, cùng với cơ chế chống cache stampede.
--   [ ] **Nhiệm vụ 2.3:** Tạo Kafka consumer để lắng nghe `InventoryUpdatedEvent` và cập nhật L2 Cache.
--   [ ] **Nhiệm vụ 2.4:** Triển khai cơ chế invalidate L1 Cache thông qua Redis Pub/Sub.
--   [ ] **Nhiệmvụ 2.5:** Viết test cho các kịch bản cache (hit, miss, invalidation). 
+## 9. Tài liệu hóa
+- [ ] Task 9.1: Cập nhật tài liệu hướng dẫn cấu hình cache, Redis, Kafka, actuator.
+- [ ] Task 9.2: Cập nhật README về kiến trúc caching 2 lớp, flow chính, các lưu ý concurrency. 
