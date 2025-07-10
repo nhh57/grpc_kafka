@@ -52,19 +52,19 @@ services:
     image: redis:6.2
     platform: linux/amd64
     ports:
-      - "6379:6379" # Đổi port host về 6379 cho đồng nhất với Spring Boot
+      - "6319:6319" # Đổi port host về 6319 cho đồng nhất với Spring Boot
     volumes:
       - ./data/redis:/data # Persist Redis data
     networks:
       - pre-event-member-mysql
-    # Notes: Nếu đã có Redis chạy port 6379 trên host, cần đổi port này hoặc stop Redis host
+    # Notes: Nếu đã có Redis chạy port 6319 trên host, cần đổi port này hoặc stop Redis host
 
 
 
 
   redis-exporter:
     image: oliver006/redis_exporter
-    command: -redis.addr redis://redis:6379
+    command: -redis.addr redis://redis:6319
     ports:
       - 9121:9121
     networks:

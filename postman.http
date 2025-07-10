@@ -1,0 +1,33 @@
+### Get Product Info - Laptop (Success Case)
+# Ghi chú: Gửi yêu cầu gRPC đến service ProductService để lấy thông tin sản phẩm.
+# Endpoint: com.example.product.grpc.ProductService/GetProductInfo
+# Host: localhost:6565
+GRPC localhost:6565
+com.example.product.grpc.ProductService/GetProductInfo
+
+{
+  "product_id": "40e6215d-b5c6-489a-983c-64265a98f895",
+  "version": 0
+}
+
+### Get Product Info - Keyboard (Success Case)
+# Ghi chú: Lấy thông tin một sản phẩm khác.
+GRPC localhost:6565
+com.example.product.grpc.ProductService/GetProductInfo
+
+{
+  "product_id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+  "version": 0
+}
+
+
+### Get Product Info (Not Found Case)
+# Ghi chú: Thử lấy một sản phẩm không tồn tại để kiểm tra kịch bản lỗi.
+# Kết quả mong đợi: Status Code 5 NOT_FOUND.
+GRPC localhost:6565
+com.example.product.grpc.ProductService/GetProductInfo
+
+{
+  "product_id": "this-id-does-not-exist",
+  "version": 0
+}

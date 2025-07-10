@@ -50,17 +50,17 @@ tags: ["grpc", "api", "protobuf", "product-service"]
 - [x] Ghi chú lại mọi thay đổi vào file `CHANGELOG.md` hoặc nhật ký cá nhân. (Đã hoàn thành)
 
 ### Nhóm: Tạo service implement các RPC
-- [ ] Mở folder: `product-service/src/main/java/com/example/productservice/grpc/`
+- [x] Mở folder: `product-service/src/main/java/com/example/productservice/grpc/` (Đã hoàn thành)
     - **Notes:** Đảm bảo folder tồn tại, nếu chưa có thì tạo mới.
-- [ ] Tạo file mới `ProductGrpcServiceImpl.java`.
+- [x] Tạo file mới `ProductGrpcServiceImpl.java`. (Đã hoàn thành)
     - **Notes:** Đặt tên file đúng chuẩn PascalCase, đúng package.
-- [ ] Implement method `GetProductInfo` (mapping từ entity Product sang message ProductInfo).
+- [x] Implement method `GetProductInfo` (mapping từ entity Product sang message ProductInfo). (Đã hoàn thành)
     - **Best practice:** Mapping đúng kiểu dữ liệu, đủ trường.
     - **Lỗi thường gặp:** Mapping sai kiểu, thiếu trường, lỗi null.
-- [ ] Implement method `ValidatePriceWithVersion` (kiểm tra version, mapping trả về ProductInfo).
+- [x] Implement method `ValidatePriceWithVersion` (kiểm tra version, mapping trả về ProductInfo). (Đã hoàn thành)
     - **Best practice:** Kiểm tra version, trả về lỗi nếu không khớp.
-- [ ] Lưu file, kiểm tra syntax lỗi compile (IDE hoặc `mvn compile`).
-- [ ] Ghi chú lại mọi thay đổi vào file `CHANGELOG.md` hoặc nhật ký cá nhân.
+- [x] Lưu file, kiểm tra syntax lỗi compile (IDE hoặc `mvn compile`). (Đã hoàn thành)
+- [x] Ghi chú lại mọi thay đổi vào file `CHANGELOG.md` hoặc nhật ký cá nhân. (Đã hoàn thành)
 
 ### Nhóm: Kiểm tra lại toàn bộ API gRPC
 - [ ] Chạy lại `mvn clean install` ở cả `common-protos/` và `product-service/` xác nhận không lỗi build.

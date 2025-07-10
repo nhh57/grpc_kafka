@@ -170,10 +170,10 @@
     - [ ] Define request/response messages
     - [ ] Configure Java package options
 
-- [ ] **Nhiệm vụ 5.4**: Implement ProductGrpcService.
-    - [ ] Implement getProductInfo method với caching integration
-    - [ ] Implement validatePriceWithVersion method
-    - [ ] Add proper error handling và status codes
+- [x] **Nhiệm vụ 5.4**: Implement ProductGrpcService. (Đã hoàn thành)
+    - [x] Implement getProductInfo method với caching integration (Đã hoàn thành)
+    - [x] Implement validatePriceWithVersion method (Đã hoàn thành)
+    - [x] Add proper error handling và status codes (Đã hoàn thành)
     - [ ] Configure gRPC interceptors cho logging và metrics
 
 ---

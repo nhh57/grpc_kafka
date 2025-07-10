@@ -24,11 +24,11 @@ Chuẩn bị toàn bộ cơ sở hạ tầng và các phụ thuộc cần thiế
 - [x] Kiểm tra đã cài đặt Docker trên máy (chạy `docker --version`). (Đã hoàn thành)
     - **Notes:** Nếu chưa có, cài đặt Docker theo hướng dẫn chính thức.
 - [x] Kiểm tra đã cài đặt Redis (chạy `redis-server --version` hoặc `docker ps | grep redis`). (Đã hoàn thành - dùng docker-compose)
-    - **Notes:** Nếu chưa có, có thể dùng Docker: `docker run -d --name redis -p 6379:6379 redis`.
+    - **Notes:** Nếu chưa có, có thể dùng Docker: `docker run -d --name redis -p 6319:6319 redis`.
 - [x] Kiểm tra đã cài đặt Kafka (chạy `kafka-server-start.sh --version` hoặc kiểm tra Docker Compose). (Đã hoàn thành - dùng docker-compose)
     - **Notes:** Nếu chưa có, dùng Docker Compose hoặc hướng dẫn chính thức.
 - [x] Start Redis và Kafka (nếu dùng Docker: `docker start redis`, `docker-compose up -d kafka`). (Đã hoàn thành)
-- [x] Kiểm tra port Redis (6379) và Kafka (9092) đã mở (`netstat -tuln | grep 6379`, `netstat -tuln | grep 9092`). (Đã hoàn thành)
+- [x] Kiểm tra port Redis (6319) và Kafka (9092) đã mở (`netstat -tuln | grep 6319`, `netstat -tuln | grep 9092`). (Đã hoàn thành)
 - [ ] Ghi chú lại version Redis/Kafka đang sử dụng vào file `CHANGELOG.md` hoặc nhật ký cá nhân.
 
 ### Nhóm: Thêm dependency vào pom.xml
@@ -65,7 +65,7 @@ Chuẩn bị toàn bộ cơ sở hạ tầng và các phụ thuộc cần thiế
 - [x] Thêm cấu hình:
     ```properties
     spring.redis.host=localhost
-    spring.redis.port=6379
+    spring.redis.port=6319
     spring.redis.timeout=2000
     spring.redis.jedis.pool.max-active=8
     spring.redis.jedis.pool.max-idle=8
@@ -112,8 +112,8 @@ Chuẩn bị toàn bộ cơ sở hạ tầng và các phụ thuộc cần thiế
 ### Nhóm: Kiểm tra lại toàn bộ
 - [x] Chạy lại `mvn clean install` xác nhận không lỗi build. (Đã hoàn thành)
 - [ ] Start app, kiểm tra log startup không có lỗi Redis/Kafka.
-- [x] Kiểm tra các port đã mở (`netstat -tuln | grep 8081`, `6379`, `9092`).
-    - **Notes:** Port 6379 (Redis) và 9092 (Kafka) đã mở, port 8080/8081 chưa thấy app chạy.
+- [x] Kiểm tra các port đã mở (`netstat -tuln | grep 8081`, `6319`, `9092`).
+    - **Notes:** Port 6319 (Redis) và 9092 (Kafka) đã mở, port 8080/8081 chưa thấy app chạy.
 - [x] Kiểm tra health endpoint: `curl http://localhost:8081/actuator/health`.
 - [ ] Ghi chú lại mọi thay đổi, chụp màn hình log nếu cần.
 - [ ] Xác nhận lại với team (nếu làm việc nhóm) về version, cấu hình, trạng thái môi trường.
