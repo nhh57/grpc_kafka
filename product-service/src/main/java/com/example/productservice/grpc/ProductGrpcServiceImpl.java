@@ -1,9 +1,6 @@
 package com.example.productservice.grpc;
 
-import com.example.product.grpc.GetProductRequest;
-import com.example.product.grpc.ProductInfo;
-import com.example.product.grpc.ProductServiceGrpc;
-import com.example.product.grpc.ValidatePriceRequest;
+import com.example.product.grpc.*;
 import com.example.productservice.domain.Product;
 import com.example.productservice.repository.ProductRepository;
 import io.grpc.Status;

@@ -118,6 +118,12 @@
             <groupId>org.springframework.kafka</groupId>
             <artifactId>spring-kafka</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-api</artifactId>
+            <version>1.60.0</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
     <build>

@@ -1,0 +1,76 @@
+{
+    "name": "Product Service",
+    "description": "A gRPC-based product service with JPA and optimistic locking",
+    "components": {
+        "common-protos": {
+            "description": "Proto definitions and generated gRPC code",
+            "key_features": [
+                "Uses protobuf-maven-plugin for code generation",
+                "Includes javax.annotation-api for gRPC generated code",
+                "Package: com.example.product.grpc"
+            ]
+        },
+        "product-service": {
+            "description": "Main service implementation",
+            "modules": {
+                "domain": {
+                    "description": "Contains Product entity",
+                    "features": [
+                        "UUID as ID",
+                        "Optimistic locking with @Version",
+                        "JPA entity mapping"
+                    ]
+                },
+                "repository": {
+                    "description": "Data access layer",
+                    "features": [
+                        "Spring Data JPA repository",
+                        "Basic CRUD operations"
+                    ]
+                },
+                "grpc": {
+                    "description": "gRPC service implementation",
+                    "endpoints": [
+                        "getProductInfo",
+                        "validatePriceWithVersion"
+                    ],
+                    "features": [
+                        "Error handling with gRPC Status codes",
+                        "Version validation",
+                        "Price validation"
+                    ]
+                }
+            },
+            "dependencies": [
+                "Spring Boot",
+                "Spring Data JPA",
+                "H2 Database",
+                "gRPC Spring Boot Starter"
+            ]
+        }
+    },
+    "technical_decisions": [
+        {
+            "decision": "Use UUID for Product ID",
+            "reason": "Better for distributed systems",
+            "impact": "Ensures unique IDs across multiple instances"
+        },
+        {
+            "decision": "Implement optimistic locking",
+            "reason": "Handle concurrent modifications safely",
+            "impact": "Prevents data inconsistency in concurrent updates"
+        },
+        {
+            "decision": "Use gRPC for communication",
+            "reason": "Efficient binary communication protocol",
+            "impact": "Better performance and type safety compared to REST"
+        }
+    ],
+    "next_steps": [
+        "Implement additional CRUD operations",
+        "Add comprehensive validation",
+        "Implement error handling",
+        "Add unit and integration tests",
+        "Add documentation"
+    ]
+} 
